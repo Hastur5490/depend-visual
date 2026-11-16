@@ -1,7 +1,7 @@
 @echo off
 cd /d "%~dp0.."
 echo 1. Успешный запуск:
-py src/main.py -p curl -r https://dl-cdn.alpinelinux.org/alpine/v3.20/main -v 8.8.0-r0 -f lib
+py src/main.py -p curl -r https://dl-cdn.alpinelinux.org/alpine/v3.20/main -v 8.14.1-r2 -f lib
 echo.
 echo 2. Ошибка URL:
 py src/main.py -p curl -r not_a_valid_url -v 8.8.0-r0
