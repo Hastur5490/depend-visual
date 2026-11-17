@@ -8,25 +8,13 @@ from apk_provider import (
 )
 from config import ConfigError, parse_arguments
 from graph_builder import build_dependency_graph_bfs, compute_load_order
+from mermaid_visualizer import generate_mermaid_diagram
 
 EXIT_CODE_SUCCESS = 0
 EXIT_CODE_CONFIG_ERR = 2
 EXIT_CODE_DATA_ERR = 3
 NO_ITEMS_COUNT = 0
 FIRST_STEP_NUM = 1
-
-
-def print_dependency_graph(
-    root_package: str, graph: dict[str, list[str]]
-) -> None:
-    """Вывод построенного графа зависимостей на экран."""
-    print(f"Граф зависимостей для пакета '{root_package}':")
-    if len(graph) == NO_ITEMS_COUNT:
-        print("  (граф пуст или пакет исключен фильтром)")
-        return
-    for package, deps in graph.items():
-        deps_str = ", ".join(deps) if deps else "(нет зависимостей)"
-        print(f"  {package} -> {deps_str}")
 
 
 def print_load_order(root_package: str, order: list[str]) -> None:
@@ -58,7 +46,7 @@ def main() -> int:
             order = compute_load_order(graph, config.package_name)
             print_load_order(config.package_name, order)
         else:
-            print_dependency_graph(config.package_name, graph)
+            print(generate_mermaid_diagram(graph))
         return EXIT_CODE_SUCCESS
     except ConfigError as err:
         print(f"Ошибка конфигурации: {err}", file=sys.stderr)
