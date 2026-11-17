@@ -1,0 +1,7 @@
+A: B_TEST C
+B_TEST: D
+C: E_TEST F
+D:
+E_TEST:
+F: G
+G:
