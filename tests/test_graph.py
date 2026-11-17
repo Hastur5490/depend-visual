@@ -1,11 +1,11 @@
-"""Тестирование построения графа зависимостей алгоритмом BFS."""
+"""Тестирование построения графа зависимостей и порядка загрузки."""
 
 import unittest
-from src.graph_builder import build_dependency_graph_bfs
+from src.graph_builder import build_dependency_graph_bfs, compute_load_order
 
 
-class TestGraphBuilderBfs(unittest.TestCase):
-    """Проверка BFS-обхода, циклов и фильтрации пакетов."""
+class TestGraphBuilderAndLoadOrder(unittest.TestCase):
+    """Проверка BFS-обхода, циклов, фильтрации и порядка загрузки."""
 
     def test_transitive_bfs_graph(self) -> None:
         """Проверка транзитивного построения графа."""
@@ -46,6 +46,34 @@ class TestGraphBuilderBfs(unittest.TestCase):
         self.assertEqual(graph["A"], ["C"])
         self.assertNotIn("B_SKIP", graph)
         self.assertNotIn("D", graph)
+
+    def test_load_order_dependencies_before_dependents(self) -> None:
+        """Проверка того, что зависимости загружаются раньше пакета."""
+        repo = {
+            "A": ["B", "C"],
+            "B": ["D"],
+            "C": ["D", "E"],
+            "D": [],
+            "E": [],
+        }
+        graph = build_dependency_graph_bfs(repo, "A")
+        order = compute_load_order(graph, "A")
+        self.assertEqual(order[-1], "A")
+        self.assertLess(order.index("D"), order.index("B"))
+        self.assertLess(order.index("D"), order.index("C"))
+        self.assertLess(order.index("E"), order.index("C"))
+
+    def test_load_order_with_cycle(self) -> None:
+        """Проверка построения порядка загрузки при наличии цикла."""
+        repo = {
+            "A": ["B"],
+            "B": ["C"],
+            "C": ["A"],
+        }
+        graph = build_dependency_graph_bfs(repo, "A")
+        order = compute_load_order(graph, "A")
+        self.assertEqual(set(order), {"A", "B", "C"})
+        self.assertEqual(order[-1], "A")
 
 
 if __name__ == "__main__":

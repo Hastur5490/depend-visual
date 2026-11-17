@@ -7,12 +7,13 @@ from apk_provider import (
     load_test_repo_map,
 )
 from config import ConfigError, parse_arguments
-from graph_builder import build_dependency_graph_bfs
+from graph_builder import build_dependency_graph_bfs, compute_load_order
 
 EXIT_CODE_SUCCESS = 0
 EXIT_CODE_CONFIG_ERR = 2
 EXIT_CODE_DATA_ERR = 3
 NO_ITEMS_COUNT = 0
+FIRST_STEP_NUM = 1
 
 
 def print_dependency_graph(
@@ -26,6 +27,16 @@ def print_dependency_graph(
     for package, deps in graph.items():
         deps_str = ", ".join(deps) if deps else "(нет зависимостей)"
         print(f"  {package} -> {deps_str}")
+
+
+def print_load_order(root_package: str, order: list[str]) -> None:
+    """Вывод порядка загрузки зависимостей на экран."""
+    print(f"Порядок загрузки зависимостей для пакета '{root_package}':")
+    if len(order) == NO_ITEMS_COUNT:
+        print("  (список загрузки пуст)")
+        return
+    for idx, pkg in enumerate(order, start=FIRST_STEP_NUM):
+        print(f"  {idx}. {pkg}")
 
 
 def main() -> int:
@@ -43,7 +54,11 @@ def main() -> int:
             root_package=config.package_name,
             filter_substring=config.filter_substring,
         )
-        print_dependency_graph(config.package_name, graph)
+        if config.load_order:
+            order = compute_load_order(graph, config.package_name)
+            print_load_order(config.package_name, order)
+        else:
+            print_dependency_graph(config.package_name, graph)
         return EXIT_CODE_SUCCESS
     except ConfigError as err:
         print(f"Ошибка конфигурации: {err}", file=sys.stderr)

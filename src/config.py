@@ -21,6 +21,7 @@ class AppConfig:
     test_mode: bool
     package_version: str
     filter_substring: str
+    load_order: bool = False
 
     def to_dict(self) -> dict[str, str]:
         """Преобразование параметров в словарь для вывода."""
@@ -30,6 +31,7 @@ class AppConfig:
             "test_mode": str(self.test_mode),
             "package_version": self.package_version,
             "filter_substring": self.filter_substring,
+            "load_order": str(self.load_order),
         }
 
 
@@ -69,6 +71,7 @@ def validate_config(
     test_mode: bool,
     package_version: str,
     filter_substring: str,
+    load_order: bool = False,
 ) -> AppConfig:
     """Валидация всех переданных параметров."""
     _validate_package_name(package_name)
@@ -80,6 +83,31 @@ def validate_config(
         test_mode=test_mode,
         package_version=package_version.strip(),
         filter_substring=filter_substring,
+        load_order=load_order,
+    )
+
+
+def _add_optional_arguments(parser: argparse.ArgumentParser) -> None:
+    """Добавление опциональных флагов в парсер командной строки."""
+    parser.add_argument(
+        "-t",
+        "--test-mode",
+        action="store_true",
+        default=False,
+        help="Режим работы с тестовым репозиторием",
+    )
+    parser.add_argument(
+        "-f",
+        "--filter",
+        default="",
+        help="Подстрока для фильтрации пакетов",
+    )
+    parser.add_argument(
+        "-l",
+        "--load-order",
+        action="store_true",
+        default=False,
+        help="Режим вывода порядка загрузки зависимостей",
     )
 
 
@@ -98,21 +126,9 @@ def create_parser() -> argparse.ArgumentParser:
         help="URL репозитория или путь к файлу тестового графа",
     )
     parser.add_argument(
-        "-t",
-        "--test-mode",
-        action="store_true",
-        default=False,
-        help="Режим работы с тестовым репозиторием",
-    )
-    parser.add_argument(
         "-v", "--version", required=True, help="Версия пакета"
     )
-    parser.add_argument(
-        "-f",
-        "--filter",
-        default="",
-        help="Подстрока для фильтрации пакетов",
-    )
+    _add_optional_arguments(parser)
     return parser
 
 
@@ -126,4 +142,5 @@ def parse_arguments(args: list[str] | None = None) -> AppConfig:
         test_mode=parsed_args.test_mode,
         package_version=parsed_args.version,
         filter_substring=parsed_args.filter,
+        load_order=parsed_args.load_order,
     )

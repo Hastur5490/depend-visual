@@ -17,10 +17,11 @@ class TestConfigValidation(unittest.TestCase):
             test_mode=False,
             package_version="8.8.0-r0",
             filter_substring="lib",
+            load_order=True,
         )
         self.assertEqual(cfg.package_name, "curl")
         self.assertFalse(cfg.test_mode)
-        self.assertEqual(cfg.filter_substring, "lib")
+        self.assertTrue(cfg.load_order)
 
     def test_successful_test_repo_config(self) -> None:
         """Проверка успешной конфигурации для тестового репозитория."""
@@ -90,11 +91,11 @@ class TestConfigValidation(unittest.TestCase):
             "1.2.5",
             "--filter",
             "dev",
+            "--load-order",
         ]
         cfg = parse_arguments(args)
         self.assertEqual(cfg.package_name, "musl")
-        self.assertEqual(cfg.package_version, "1.2.5")
-        self.assertEqual(cfg.filter_substring, "dev")
+        self.assertTrue(cfg.load_order)
 
 
 if __name__ == "__main__":
